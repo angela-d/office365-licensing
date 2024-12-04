@@ -18,6 +18,8 @@
     $tenantID = ""
     $appID = ""
     $thumbprint = ""
+    $certSN = "SN of your certificate"
+    $thumbprint = (Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object {$_.Subject -match $certSN}).Thumbprint;
     $csvPath = "C:\Scripts\officescripts\export\exportedFor365.csv"
 
     # breakdown of completed data - used to gauge whether or not to trigger an email alert for inactivity (file is written to at end of script execution)
@@ -153,8 +155,16 @@ Import-Module Microsoft.Graph.Users
 Disconnect-MgGraph -ErrorAction SilentlyContinue
 # will trigger: 'No application to sign out from.' without erroraction if there's no queued session, unsure how to error handle
 
-Write-Host "Connecting to Graph App ID: $appID on Tenant ID: $tenantID with thumbprint: $thumbprint"
-Connect-MgGraph -ClientID $appID -TenantId $tenantID -CertificateThumbprint $thumbprint -NoWelcome
+Write-Host "Connecting to Graph App ID: $appID on Tenant ID: $tenantID with thumbprint: $thumbprint..."
+try {
+    Connect-MgGraph -ClientID $appID -TenantId $tenantID -CertificateThumbprint $thumbprint -NoWelcome
+} catch {
+    Write-Host -Foreground Red $_
+    sendEmail "Error Connecting to Entra License Sync" "The following error prevented the script from running:`n $_"
+    Write-Host "Exiting..."
+    exit
+}
+
 Write-Output "=================="
 Write-Output "Connected to Graph!"
 Write-Output "==================`n`n"
