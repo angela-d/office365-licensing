@@ -2,7 +2,7 @@
 Powershell scripts using Microsoft Graph to automate Office 365 license assignments based on security groups in Active Directory.
 
 ## Pre-requisites
-- Already syncing your onsite Active Directory to Office 365 using Azure Active Directory Sync / Entra Cloud Sync
+- Already syncing your onsite Active Directory to Office 365 using Azure / Entra Active Directory Sync / Entra Cloud Sync
 - Configure the two attached Powershell scripts with your environment's config
 
 ## Features of the Scripts
@@ -45,6 +45,8 @@ Write-Output "Special One licenses to issue: $totalSpecialTwo"
 ```
 
 Config options for process_license.ps1:
+- **Install the certificate you'll be using** to the *Local Machine* where this script will be running
+- **Make note of the SN** mmc.exe > File > Add/Remove Snap-In > Certificates > Add > Computer Account > Certificates > Personal > Certificates > locate your cert > Open it > Details > Subject; this goes in the **$certSN** variable
 - **$To** = Email address for notifications if there's licensing problems; like a helpdesk email
 - **$From** = Sender of notifications for licensing problems
 - **$SMTPServer** = SMTP host of your mail server
@@ -55,10 +57,9 @@ Config options for process_license.ps1:
 - `function consumedSeats` and `function whichLicense` - Set user-readable names for your licenses in this conditional lookup -- does not need to match Microsoft's naming convention
 - **$debug** = Set to `1` when you **do not want to make changes to O365**!  `0` will make immediate changes to your O365 tenant!
 
-Obtain the following from [portal.azure.com](https://portal.azure.com):
-- **$tenantID** = Tenant ID of your MS Office ([direct link to obtain this stuff](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/))
+Obtain the following from [entra.microsoft.com](https://entra.microsoft.com):
+- **$tenantID** = Tenant ID of your MS Office ([direct link to obtain this stuff](https://entra.microsoft.com/#home))
 - **$appID** = same as above
-- **$thumbprint** = [thumbprint](https://blog.rmilne.ca/2018/05/14/easy-way-to-retrieve-certificate-thumbprint-using-powershell/) of [your certificate](https://www.sharepointdiary.com/2023/04/how-to-connect-to-microsoft-graph-api-from-powershell.html#h-add-certificate-and-or-client-secret-to-the-appid)
 - **$csvPath** = this must match **$exportedFor365** from the *readyfor365.ps1* script
 - **$resultFile** = Absolute (full) path to log textual output from the process; is written over on each run.
 - **$newlyLicensedFile** = Absolute (full) path to log textual output from the process for every new license assignee; is written over on each run.
@@ -117,7 +118,7 @@ Import-Module Microsoft.Graph.Users
 - Once everything is working smoothly, automate to run headless via Task Scheduler
 
 **NOTE!!!** 
-- If you make changes to your api privileges from the Azure portal, Graph will inherit from your last session and not pick up the changes until you disconnect; to do so:
+- If you make changes to your api privileges from the Azure / Entra portal, Graph will inherit from your last session and not pick up the changes until you disconnect; to do so:
 
     ```powershell
     Disconnect-MgGraph -ErrorAction SilentlyContinue
